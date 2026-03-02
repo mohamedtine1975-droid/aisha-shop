@@ -669,7 +669,7 @@ function renderSettings() {
     </div>
     <div class="admin-card">
       <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;margin-bottom:1.5rem">📱 Infos boutique</h3>
-      <div class="form-field"><label>Numéro WhatsApp</label><input type="tel" placeholder="+221 77 XXX XX XX" value="+221 77 XXX XX XX"></div>
+      <div class="form-field"><label>Numéro WhatsApp</label><input type="tel" placeholder="+221 77 XXX XX XX" value="+221 77 252 04 11"></div>
       <div class="form-field"><label>Instagram</label><input type="text" placeholder="@aisha_t_shop" value="@aisha_t_shop"></div>
       <div class="form-field"><label>Message de bienvenue WhatsApp</label><textarea rows="3" placeholder="Bonjour ! Bienvenue chez Aïsha-T Shop...">Bonjour ! 🌸 Bienvenue chez Aïsha-T Shop. Comment puis-je vous aider ?</textarea></div>
       <button class="btn-save" onclick="showAdminToast('✅ Informations sauvegardées !')">Sauvegarder</button>
