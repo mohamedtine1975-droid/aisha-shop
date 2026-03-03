@@ -7,7 +7,7 @@
 /* ===== JSONBIN CONFIG ===== */
 // 👉 Même valeurs que dans main.js
 const JSONBIN = {
-  BIN_ID:  '69a76dafd0ea881f40ec0357',
+  BIN_ID:  '69a771b7d0ea881f40ec0aba',
   API_KEY: '$2a$10$sJrZvuA9gNKn3Wjsrq1DN.iKGriaDfJb9DvoM1l4n6ORHPKuFSz8a',
   get URL() { return `https://api.jsonbin.io/v3/b/${this.BIN_ID}`; }
 };
@@ -43,19 +43,22 @@ async function cloudSave(products) {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'X-Master-Key': JSONBIN.API_KEY
+        'X-Master-Key': JSONBIN.API_KEY,
+        'X-Bin-Private': 'false'
       },
       body: JSON.stringify({ products })
     });
-    if (!res.ok) throw new Error('save failed');
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`HTTP ${res.status}: ${errText.substring(0,80)}`);
+    }
     // Cache local aussi
     localStorage.setItem('aisha_products', JSON.stringify(products));
     showAdminToast('✅ Sauvegardé ! Visible partout 🌍');
   } catch(e) {
-    console.error('Erreur sauvegarde JSONBin:', e);
-    // Fallback local
+    console.error('Erreur JSONBin details:', e.message, e);
     localStorage.setItem('aisha_products', JSON.stringify(products));
-    showAdminToast('⚠️ Sauvegardé en local seulement');
+    showAdminToast('⚠️ Erreur: ' + e.message.substring(0, 40));
   }
 }
 
