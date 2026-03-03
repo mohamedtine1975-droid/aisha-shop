@@ -102,9 +102,10 @@ function togglePassword() {
 }
 
 function showApp() {
-  document.getElementById('loginPage').style.display = 'none';
-  const app = document.getElementById('adminApp');
-  app.classList.add('active');
+  const login = document.getElementById('loginPage');
+  const app   = document.getElementById('adminApp');
+  if (login) { login.style.display = 'none'; login.style.pointerEvents = 'none'; }
+  if (app)   { app.style.display = 'flex'; app.classList.add('active'); }
   navigateTo('dashboard');
 }
 
@@ -116,6 +117,7 @@ function logout() {
 /* ===== NAVIGATION ===== */
 function navigateTo(page) {
   AdminStore.currentPage = page;
+  if (window.innerWidth <= 768) closeSidebar();
 
   // Update sidebar
   document.querySelectorAll('.sidebar-link').forEach(l => {
@@ -510,6 +512,8 @@ function saveProduct() {
   }
 
   AdminStore.save();
+  // Dispatch event so any open shop tab reloads products
+  try { window.dispatchEvent(new StorageEvent('storage', { key: 'aisha_products' })); } catch(e) {}
   closeProductForm();
   navigateTo('products');
 }
@@ -519,7 +523,11 @@ function editProduct(id) { openProductForm(id); }
 function deleteProduct(id) {
   if (!confirm('Supprimer cet article définitivement ?')) return;
   const idx = AdminStore.products.findIndex(p=>p.id===id);
-  if (idx !== -1) { AdminStore.products.splice(idx,1); AdminStore.save(); }
+  if (idx !== -1) {
+    AdminStore.products.splice(idx,1);
+    AdminStore.save();
+    try { window.dispatchEvent(new StorageEvent('storage', { key: 'aisha_products' })); } catch(e) {}
+  }
   navigateTo('products');
   showAdminToast('🗑️ Article supprimé');
 }
@@ -669,7 +677,7 @@ function renderSettings() {
     </div>
     <div class="admin-card">
       <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;margin-bottom:1.5rem">📱 Infos boutique</h3>
-      <div class="form-field"><label>Numéro WhatsApp</label><input type="tel" placeholder="+221 77 252 04 11" value="+221 77 252 04 11"></div>
+      <div class="form-field"><label>Numéro WhatsApp</label><input type="tel" placeholder="+221 77 XXX XX XX" value="+221 77 XXX XX XX"></div>
       <div class="form-field"><label>Instagram</label><input type="text" placeholder="@aisha_t_shop" value="@aisha_t_shop"></div>
       <div class="form-field"><label>Message de bienvenue WhatsApp</label><textarea rows="3" placeholder="Bonjour ! Bienvenue chez Aïsha-T Shop...">Bonjour ! 🌸 Bienvenue chez Aïsha-T Shop. Comment puis-je vous aider ?</textarea></div>
       <button class="btn-save" onclick="showAdminToast('✅ Informations sauvegardées !')">Sauvegarder</button>
@@ -728,5 +736,25 @@ function showAdminToast(msg) {
 
 /* ===== SIDEBAR MOBILE ===== */
 function toggleSidebar() {
-  document.querySelector('.sidebar')?.classList.toggle('open');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!sidebar) return;
+  const isOpen = sidebar.classList.toggle('open');
+  if (overlay) overlay.classList.toggle('show', isOpen);
+  document.body.style.overflow = isOpen ? 'hidden' : '';
 }
+
+function closeSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (sidebar) sidebar.classList.remove('open');
+  if (overlay) overlay.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// Close sidebar on nav click (mobile)
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('sidebar-link') && window.innerWidth <= 768) {
+    closeSidebar();
+  }
+});

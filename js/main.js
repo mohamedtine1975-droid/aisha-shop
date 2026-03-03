@@ -5,21 +5,32 @@
 'use strict';
 
 /* ===== DATA STORE ===== */
+/* ===== DEFAULT PRODUCTS (used only if nothing saved in localStorage) ===== */
+const DEFAULT_PRODUCTS = [
+  { id:1,  name:"Robe Fleurie Bohème",   cat:"robe",       emoji:"👗", price:18500, old:25000, badge:"Nouveau", desc:"Magnifique robe fleurie légère, parfaite pour l'été. Tissu respirant, coupe flatteuse.", stock:15 },
+  { id:2,  name:"Robe Soirée Velours",   cat:"robe",       emoji:"🥻", price:34000, old:48000, badge:"Promo",   desc:"Robe longue pour soirée en velours satiné, disponible en noir et bordeaux.", stock:8 },
+  { id:3,  name:"Top Crochet Tendance",  cat:"top",        emoji:"👚", price:8500,  old:null,  badge:"Nouveau", desc:"Top crochet tendance, style boho chic. Se porte avec jean ou jupe fluide.", stock:20 },
+  { id:4,  name:"Blouse Romantique",     cat:"top",        emoji:"👕", price:12000, old:16000, badge:"Promo",   desc:"Blouse avec détails brodés, coupe loose confortable et féminine.", stock:12 },
+  { id:5,  name:"Jean Taille Haute",     cat:"jean",       emoji:"👖", price:22000, old:null,  badge:null,      desc:"Jean skinny taille haute très tendance. Tissu stretch confortable.", stock:10 },
+  { id:6,  name:"Pantalon Large Chic",   cat:"jean",       emoji:"🩱", price:19500, old:28000, badge:"Promo",   desc:"Pantalon wide leg élégant, parfait pour le bureau ou une sortie.", stock:7 },
+  { id:7,  name:"Sac Bandoulière Mini",  cat:"accessoire", emoji:"👜", price:14000, old:null,  badge:"Nouveau", desc:"Mini sac tendance, chaîne dorée, plusieurs coloris disponibles.", stock:18 },
+  { id:8,  name:"Ensemble Deux Pièces",  cat:"robe",       emoji:"💃", price:28000, old:38000, badge:"Promo",   desc:"Set coordonné top + jupe, couleurs pastels tendance.", stock:5 },
+  { id:9,  name:"Veste Oversize",        cat:"top",        emoji:"🧥", price:24000, old:null,  badge:"Nouveau", desc:"Veste oversize moderne, polyvalente et tendance.", stock:9 },
+  { id:10, name:"Lunettes de Soleil",    cat:"accessoire", emoji:"🕶️", price:6500,  old:null,  badge:null,      desc:"Lunettes mode protection UV400, montures tendance.", stock:25 },
+  { id:11, name:"Robe Mini Imprimée",    cat:"robe",       emoji:"🌸", price:15000, old:20000, badge:"Promo",   desc:"Robe mini imprimée vivante, style estival et coloré.", stock:11 },
+  { id:12, name:"Ceinture Dorée Large",  cat:"accessoire", emoji:"✨", price:5500,  old:null,  badge:null,      desc:"Ceinture dorée large pour sublimer toutes vos tenues.", stock:30 },
+];
+
+function loadProducts() {
+  try {
+    const saved = localStorage.getItem('aisha_products');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return DEFAULT_PRODUCTS;
+}
+
 const Store = {
-  products: JSON.parse(localStorage.getItem('aisha_products') || 'null') || [
-    { id:1, name:"Robe Fleurie Bohème",    cat:"robe",       emoji:"👗", price:18500, old:25000, badge:"Nouveau", desc:"Magnifique robe fleurie légère, parfaite pour l'été. Tissu respirant, coupe flatteuse.", stock:15 },
-    { id:2, name:"Robe Soirée Velours",    cat:"robe",       emoji:"🥻", price:34000, old:48000, badge:"Promo",   desc:"Robe longue pour soirée en velours satiné, disponible en noir et bordeaux.", stock:8 },
-    { id:3, name:"Top Crochet Tendance",   cat:"top",        emoji:"👚", price:8500,  old:null,  badge:"Nouveau", desc:"Top crochet tendance, style boho chic. Se porte avec jean ou jupe fluide.", stock:20 },
-    { id:4, name:"Blouse Romantique",      cat:"top",        emoji:"👕", price:12000, old:16000, badge:"Promo",   desc:"Blouse avec détails brodés, coupe loose confortable et féminine.", stock:12 },
-    { id:5, name:"Jean Taille Haute",      cat:"jean",       emoji:"👖", price:22000, old:null,  badge:null,      desc:"Jean skinny taille haute très tendance. Tissu stretch confortable.", stock:10 },
-    { id:6, name:"Pantalon Large Chic",    cat:"jean",       emoji:"🩱", price:19500, old:28000, badge:"Promo",   desc:"Pantalon wide leg élégant, parfait pour le bureau ou une sortie.", stock:7 },
-    { id:7, name:"Sac Bandoulière Mini",   cat:"accessoire", emoji:"👜", price:14000, old:null,  badge:"Nouveau", desc:"Mini sac tendance, chaîne dorée, plusieurs coloris disponibles.", stock:18 },
-    { id:8, name:"Ensemble Deux Pièces",   cat:"robe",       emoji:"💃", price:28000, old:38000, badge:"Promo",   desc:"Set coordonné top + jupe, couleurs pastels tendance.", stock:5 },
-    { id:9, name:"Veste Oversize",         cat:"top",        emoji:"🧥", price:24000, old:null,  badge:"Nouveau", desc:"Veste oversize moderne, polyvalente et tendance.", stock:9 },
-    { id:10,name:"Lunettes de Soleil",     cat:"accessoire", emoji:"🕶️", price:6500,  old:null,  badge:null,      desc:"Lunettes mode protection UV400, montures tendance.", stock:25 },
-    { id:11,name:"Robe Mini Imprimée",     cat:"robe",       emoji:"🌸", price:15000, old:20000, badge:"Promo",   desc:"Robe mini imprimée vivante, style estival et coloré.", stock:11 },
-    { id:12,name:"Ceinture Dorée Large",   cat:"accessoire", emoji:"✨", price:5500,  old:null,  badge:null,      desc:"Ceinture dorée large pour sublimer toutes vos tenues.", stock:30 },
-  ],
+  get products() { return loadProducts(); },
   cart: JSON.parse(localStorage.getItem('aisha_cart') || '[]'),
   wishlist: JSON.parse(localStorage.getItem('aisha_wish') || '[]'),
   currentFilter: 'tout',
@@ -28,7 +39,6 @@ const Store = {
   currentProduct: null,
 
   save() {
-    localStorage.setItem('aisha_products', JSON.stringify(this.products));
     localStorage.setItem('aisha_cart', JSON.stringify(this.cart));
     localStorage.setItem('aisha_wish', JSON.stringify(this.wishlist));
   }
@@ -36,14 +46,15 @@ const Store = {
 
 /* ===== LOADER ===== */
 window.addEventListener('load', () => {
-  setTimeout(() => {
-    const loader = document.getElementById('loader');
-    if (loader) {
-      loader.classList.add('hide');
-      setTimeout(() => loader.remove(), 800);
-    }
+  const loader = document.getElementById('loader');
+  if (!loader) { initReveal(); return; }
+  // Always dismiss loader after max 2.5s
+  const dismiss = () => {
+    loader.classList.add('hide');
+    setTimeout(() => { if (loader.parentNode) loader.parentNode.removeChild(loader); }, 800);
     initReveal();
-  }, 2200);
+  };
+  setTimeout(dismiss, 2000);
 });
 
 /* ===== CUSTOM CURSOR ===== */
@@ -459,4 +470,11 @@ if (heroSection) heroObs.observe(heroSection);
 document.addEventListener('DOMContentLoaded', () => {
   renderProducts();
   updateCartUI();
+});
+
+// Auto-refresh products if admin makes changes in another tab
+window.addEventListener('storage', e => {
+  if (e.key === 'aisha_products') {
+    renderProducts();
+  }
 });

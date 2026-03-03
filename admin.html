@@ -63,10 +63,13 @@
 </div>
 
 <!-- ==================== ADMIN APP ==================== -->
-<div id="adminApp">
+<div id="adminApp" style="display:none">
 
   <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
+  <!-- Sidebar overlay for mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <div class="brand">Aïsha-T Shop</div>
       <div class="role">Panneau d'administration</div>
@@ -127,7 +130,7 @@
     <!-- TOPBAR -->
     <div class="topbar">
       <div class="topbar-left">
-        <button class="topbar-btn" onclick="toggleSidebar()" style="display:none" id="menuBtn">☰</button>
+        <button class="topbar-btn" onclick="toggleSidebar()" id="menuBtn" style="display:none">☰</button>
         <h1 class="page-title" id="pageTitle">Tableau de bord</h1>
       </div>
       <div class="topbar-right">
@@ -158,10 +161,14 @@
 <script src="js/admin.js"></script>
 
 <script>
-  // Responsive menu button
-  if (window.innerWidth <= 768) {
-    document.getElementById('menuBtn').style.display = 'flex';
+  // Show hamburger on mobile
+  function handleResize() {
+    const btn = document.getElementById('menuBtn');
+    if (!btn) return;
+    btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
   }
+  handleResize();
+  window.addEventListener('resize', handleResize);
 </script>
 </body>
 </html>
