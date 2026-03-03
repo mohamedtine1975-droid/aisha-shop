@@ -7,14 +7,14 @@
 /* ===== JSONBIN CONFIG ===== */
 // 👉 Même valeurs que dans main.js
 const JSONBIN = {
-  BIN_ID:  '69a769c6d0ea881f40ebfab1',
+  BIN_ID:  '69a76dafd0ea881f40ec0357',
   API_KEY: '$2a$10$sJrZvuA9gNKn3Wjsrq1DN.iKGriaDfJb9DvoM1l4n6ORHPKuFSz8a',
   get URL() { return `https://api.jsonbin.io/v3/b/${this.BIN_ID}`; }
 };
 
 /* ===== JSONBIN HELPERS ===== */
 async function cloudLoad() {
-  if (JSONBIN.BIN_ID === 'METS_TON_BIN_ID_ICI') {
+  if (!JSONBIN.BIN_ID || !JSONBIN.API_KEY) {
     // Mode local sans JSONBin
     return null;
   }
@@ -32,7 +32,7 @@ async function cloudLoad() {
 }
 
 async function cloudSave(products) {
-  if (JSONBIN.BIN_ID === 'METS_TON_BIN_ID_ICI') {
+  if (!JSONBIN.BIN_ID || !JSONBIN.API_KEY) {
     // Fallback: sauvegarde locale seulement
     localStorage.setItem('aisha_products', JSON.stringify(products));
     return;

@@ -8,7 +8,7 @@
 /* ===== JSONBIN CONFIG ===== */
 // 👉 Remplis ces 2 valeurs après avoir créé ton compte sur jsonbin.io
 const JSONBIN = {
-  BIN_ID:  '69a769c6d0ea881f40ebfab1',       // ex: 6650abc123def456
+  BIN_ID:  '69a76dafd0ea881f40ec0357',       // ex: 6650abc123def456
   API_KEY: '$2a$10$sJrZvuA9gNKn3Wjsrq1DN.iKGriaDfJb9DvoM1l4n6ORHPKuFSz8a',       // ex: $2a$10$xxxxxxxxxxxx
   get URL() { return `https://api.jsonbin.io/v3/b/${this.BIN_ID}`; }
 };
@@ -48,7 +48,7 @@ const Store = {
 /* ===== JSONBIN API ===== */
 async function loadProductsFromCloud() {
   // Si la clé n'est pas configurée, utilise les produits par défaut
-  if (JSONBIN.BIN_ID === 'METS_TON_BIN_ID_ICI') {
+  if (!JSONBIN.BIN_ID || !JSONBIN.API_KEY) {
     Store.products = DEFAULT_PRODUCTS;
     return;
   }
