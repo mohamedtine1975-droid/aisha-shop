@@ -4,6 +4,61 @@
 
 'use strict';
 
+/* ===== JSONBIN CONFIG ===== */
+// 👉 Même valeurs que dans main.js
+const JSONBIN = {
+  BIN_ID:  '69a769c6d0ea881f40ebfab1',
+  API_KEY: '$2a$10$sJrZvuA9gNKn3Wjsrq1DN.iKGriaDfJb9DvoM1l4n6ORHPKuFSz8a',
+  get URL() { return `https://api.jsonbin.io/v3/b/${this.BIN_ID}`; }
+};
+
+/* ===== JSONBIN HELPERS ===== */
+async function cloudLoad() {
+  if (JSONBIN.BIN_ID === 'METS_TON_BIN_ID_ICI') {
+    // Mode local sans JSONBin
+    return null;
+  }
+  try {
+    const res = await fetch(JSONBIN.URL + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN.API_KEY }
+    });
+    if (!res.ok) throw new Error('fetch failed');
+    const data = await res.json();
+    return data.record.products || null;
+  } catch(e) {
+    console.warn('Impossible de charger depuis JSONBin:', e);
+    return null;
+  }
+}
+
+async function cloudSave(products) {
+  if (JSONBIN.BIN_ID === 'METS_TON_BIN_ID_ICI') {
+    // Fallback: sauvegarde locale seulement
+    localStorage.setItem('aisha_products', JSON.stringify(products));
+    return;
+  }
+  showAdminToast('⏳ Sauvegarde en cours...');
+  try {
+    const res = await fetch(JSONBIN.URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN.API_KEY
+      },
+      body: JSON.stringify({ products })
+    });
+    if (!res.ok) throw new Error('save failed');
+    // Cache local aussi
+    localStorage.setItem('aisha_products', JSON.stringify(products));
+    showAdminToast('✅ Sauvegardé ! Visible partout 🌍');
+  } catch(e) {
+    console.error('Erreur sauvegarde JSONBin:', e);
+    // Fallback local
+    localStorage.setItem('aisha_products', JSON.stringify(products));
+    showAdminToast('⚠️ Sauvegardé en local seulement');
+  }
+}
+
 /* ===== AUTH CONFIG ===== */
 const AUTH = {
   username: 'aisha',
@@ -12,21 +67,25 @@ const AUTH = {
 };
 
 /* ===== DATA ===== */
+const DEFAULT_ADMIN_PRODUCTS = [
+  { id:1,  name:"Robe Fleurie Bohème",   cat:"robe",       emoji:"👗", price:18500, old:25000, badge:"Nouveau", stock:15, desc:"Magnifique robe fleurie légère, parfaite pour l'été." },
+  { id:2,  name:"Robe Soirée Velours",   cat:"robe",       emoji:"🥻", price:34000, old:48000, badge:"Promo",   stock:8,  desc:"Robe longue pour soirée en velours satiné." },
+  { id:3,  name:"Top Crochet Tendance",  cat:"top",        emoji:"👚", price:8500,  old:null,  badge:"Nouveau", stock:20, desc:"Top crochet tendance, style boho chic." },
+  { id:4,  name:"Blouse Romantique",     cat:"top",        emoji:"👕", price:12000, old:16000, badge:"Promo",   stock:12, desc:"Blouse avec détails brodés, coupe loose." },
+  { id:5,  name:"Jean Taille Haute",     cat:"jean",       emoji:"👖", price:22000, old:null,  badge:null,      stock:10, desc:"Jean skinny taille haute très tendance." },
+  { id:6,  name:"Pantalon Large Chic",   cat:"jean",       emoji:"🩱", price:19500, old:28000, badge:"Promo",   stock:7,  desc:"Pantalon wide leg élégant." },
+  { id:7,  name:"Sac Bandoulière Mini",  cat:"accessoire", emoji:"👜", price:14000, old:null,  badge:"Nouveau", stock:18, desc:"Mini sac tendance, chaîne dorée." },
+  { id:8,  name:"Ensemble Deux Pièces",  cat:"robe",       emoji:"💃", price:28000, old:38000, badge:"Promo",   stock:5,  desc:"Set coordonné top + jupe, couleurs pastels." },
+  { id:9,  name:"Veste Oversize",        cat:"top",        emoji:"🧥", price:24000, old:null,  badge:"Nouveau", stock:9,  desc:"Veste oversize moderne et polyvalente." },
+  { id:10, name:"Lunettes de Soleil",    cat:"accessoire", emoji:"🕶️", price:6500,  old:null,  badge:null,      stock:25, desc:"Lunettes mode protection UV400." },
+  { id:11, name:"Robe Mini Imprimée",    cat:"robe",       emoji:"🌸", price:15000, old:20000, badge:"Promo",   stock:11, desc:"Robe mini imprimée vivante, style estival." },
+  { id:12, name:"Ceinture Dorée Large",  cat:"accessoire", emoji:"✨", price:5500,  old:null,  badge:null,      stock:30, desc:"Ceinture dorée large pour sublimer vos tenues." },
+];
+
 const AdminStore = {
-  products: JSON.parse(localStorage.getItem('aisha_products') || 'null') || [
-    { id:1, name:"Robe Fleurie Bohème",    cat:"robe",       emoji:"👗", price:18500, old:25000, badge:"Nouveau", stock:15, desc:"Magnifique robe fleurie légère, parfaite pour l'été." },
-    { id:2, name:"Robe Soirée Velours",    cat:"robe",       emoji:"🥻", price:34000, old:48000, badge:"Promo",   stock:8,  desc:"Robe longue pour soirée en velours satiné." },
-    { id:3, name:"Top Crochet Tendance",   cat:"top",        emoji:"👚", price:8500,  old:null,  badge:"Nouveau", stock:20, desc:"Top crochet tendance, style boho chic." },
-    { id:4, name:"Blouse Romantique",      cat:"top",        emoji:"👕", price:12000, old:16000, badge:"Promo",   stock:12, desc:"Blouse avec détails brodés, coupe loose." },
-    { id:5, name:"Jean Taille Haute",      cat:"jean",       emoji:"👖", price:22000, old:null,  badge:null,      stock:10, desc:"Jean skinny taille haute très tendance." },
-    { id:6, name:"Pantalon Large Chic",    cat:"jean",       emoji:"🩱", price:19500, old:28000, badge:"Promo",   stock:7,  desc:"Pantalon wide leg élégant." },
-    { id:7, name:"Sac Bandoulière Mini",   cat:"accessoire", emoji:"👜", price:14000, old:null,  badge:"Nouveau", stock:18, desc:"Mini sac tendance, chaîne dorée." },
-    { id:8, name:"Ensemble Deux Pièces",   cat:"robe",       emoji:"💃", price:28000, old:38000, badge:"Promo",   stock:5,  desc:"Set coordonné top + jupe, couleurs pastels." },
-    { id:9, name:"Veste Oversize",         cat:"top",        emoji:"🧥", price:24000, old:null,  badge:"Nouveau", stock:9,  desc:"Veste oversize moderne et polyvalente." },
-    { id:10,name:"Lunettes de Soleil",     cat:"accessoire", emoji:"🕶️", price:6500,  old:null,  badge:null,      stock:25, desc:"Lunettes mode protection UV400." },
-    { id:11,name:"Robe Mini Imprimée",     cat:"robe",       emoji:"🌸", price:15000, old:20000, badge:"Promo",   stock:11, desc:"Robe mini imprimée vivante, style estival." },
-    { id:12,name:"Ceinture Dorée Large",   cat:"accessoire", emoji:"✨", price:5500,  old:null,  badge:null,      stock:30, desc:"Ceinture dorée large pour sublimer vos tenues." },
-  ],
+  products: (() => {
+    try { const s = localStorage.getItem('aisha_products'); return s ? JSON.parse(s) : DEFAULT_ADMIN_PRODUCTS; } catch(e) { return DEFAULT_ADMIN_PRODUCTS; }
+  })(),
   orders: [
     { id:'#0023', client:'Aminata Diallo',  tel:'77 123 45 67', items:'Robe Fleurie × 1', total:18500, status:'done',    date:'28 Jan 2025' },
     { id:'#0022', client:'Fatou Mbaye',     tel:'76 987 65 43', items:'Blouse × 2, Top × 1', total:32500, status:'pending', date:'27 Jan 2025' },
@@ -48,7 +107,7 @@ const AdminStore = {
   selectedEmoji: '👗',
   selectedImageBase64: null,
 
-  save() { localStorage.setItem('aisha_products', JSON.stringify(this.products)); }
+  async save() { await cloudSave(this.products); }
 };
 
 /* ===== SESSION ===== */
@@ -101,11 +160,20 @@ function togglePassword() {
   else { inp.type = 'password'; btn.textContent = '👁️'; }
 }
 
-function showApp() {
+async function showApp() {
   const login = document.getElementById('loginPage');
   const app   = document.getElementById('adminApp');
   if (login) { login.style.display = 'none'; login.style.pointerEvents = 'none'; }
   if (app)   { app.style.display = 'flex'; app.classList.add('active'); }
+
+  // Charger les produits depuis le cloud au démarrage
+  const cloudProducts = await cloudLoad();
+  if (cloudProducts && cloudProducts.length > 0) {
+    AdminStore.products = cloudProducts;
+    localStorage.setItem('aisha_products', JSON.stringify(cloudProducts));
+    // Calcule le prochain ID
+    AdminStore.nextId = Math.max(...cloudProducts.map(p => p.id), 12) + 1;
+  }
   navigateTo('dashboard');
 }
 
@@ -483,7 +551,7 @@ function selectEmoji(emoji, el) {
   el.classList.add('selected');
 }
 
-function saveProduct() {
+async function saveProduct() {
   const name = document.getElementById('fName').value.trim();
   const price = parseInt(document.getElementById('fPrice').value);
 
@@ -511,22 +579,19 @@ function saveProduct() {
     showAdminToast('✅ Article ajouté !');
   }
 
-  AdminStore.save();
-  // Dispatch event so any open shop tab reloads products
-  try { window.dispatchEvent(new StorageEvent('storage', { key: 'aisha_products' })); } catch(e) {}
+  await AdminStore.save();
   closeProductForm();
   navigateTo('products');
 }
 
 function editProduct(id) { openProductForm(id); }
 
-function deleteProduct(id) {
+async function deleteProduct(id) {
   if (!confirm('Supprimer cet article définitivement ?')) return;
   const idx = AdminStore.products.findIndex(p=>p.id===id);
   if (idx !== -1) {
     AdminStore.products.splice(idx,1);
-    AdminStore.save();
-    try { window.dispatchEvent(new StorageEvent('storage', { key: 'aisha_products' })); } catch(e) {}
+    await AdminStore.save();
   }
   navigateTo('products');
   showAdminToast('🗑️ Article supprimé');
