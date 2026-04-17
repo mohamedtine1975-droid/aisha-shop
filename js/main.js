@@ -8,10 +8,12 @@
 const WA_NUMBER = '221772520411';
 
 /* ===== JSONBIN CONFIG ===== */
-// 👉 Remplis ces 2 valeurs après avoir créé ton compte sur jsonbin.io
+// 🚨 SÉCURITÉ : La Master Key a été remplacée !
+// Vous devez générer une Access Key en LECTURE SEULE sur JSONBin.io 
+// pour que le site public n'expose pas vos droits d'écriture.
 const JSONBIN = {
-  BIN_ID:  '69a771b7d0ea881f40ec0aba',       // ex: 6650abc123def456
-  API_KEY: '$2a$10$sJrZvuA9gNKn3Wjsrq1DN.iKGriaDfJb9DvoM1l4n6ORHPKuFSz8a',       // ex: $2a$10$xxxxxxxxxxxx
+  BIN_ID:  '69a771b7d0ea881f40ec0aba',
+  API_KEY: 'REMPLACEZ_CECI_PAR_UNE_CLE_DE_LECTURE_SEULE',
   get URL() { return `https://api.jsonbin.io/v3/b/${this.BIN_ID}`; }
 };
 
@@ -34,16 +36,18 @@ const DEFAULT_PRODUCTS = [
 /* ===== STORE ===== */
 const Store = {
   products: [],          // chargés depuis JSONBin au démarrage
-  cart:     JSON.parse(localStorage.getItem('aisha_cart') || '[]'),
-  wishlist: JSON.parse(localStorage.getItem('aisha_wish') || '[]'),
+  cart:     (() => { try { return JSON.parse(localStorage.getItem('aisha_cart') || '[]'); } catch(e) { return []; } })(),
+  wishlist: (() => { try { return JSON.parse(localStorage.getItem('aisha_wish') || '[]'); } catch(e) { return []; } })(),
   currentFilter: 'tout',
   currentSort: 'recent',
   searchQuery: '',
   currentProduct: null,
 
   saveCart() {
-    localStorage.setItem('aisha_cart', JSON.stringify(this.cart));
-    localStorage.setItem('aisha_wish', JSON.stringify(this.wishlist));
+    try {
+      localStorage.setItem('aisha_cart', JSON.stringify(this.cart));
+      localStorage.setItem('aisha_wish', JSON.stringify(this.wishlist));
+    } catch(e) { console.warn('Erreur localStorage, peut-être désactivé ?', e); }
   }
 };
 
@@ -83,7 +87,7 @@ function dismissLoader() {
   initReveal();
 }
 
-window.addEventListener('load', async () => {
+window.addEventListener('DOMContentLoaded', async () => {
   // Securite : loader disparait TOUJOURS apres 3 secondes max
   const safetyTimer = setTimeout(dismissLoader, 3000);
 
@@ -154,8 +158,31 @@ if (cursor && window.innerWidth > 768) {
     }
   }
   const particles = Array.from({length:60}, () => new Particle());
-  function loop() { ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p=>{p.update();p.draw();}); requestAnimationFrame(loop); }
-  loop();
+  let rafId;
+  let isPlaying = false;
+  
+  function loop() { 
+    if (!isPlaying) return;
+    ctx.clearRect(0,0,canvas.width,canvas.height); 
+    particles.forEach(p=>{p.update();p.draw();}); 
+    rafId = requestAnimationFrame(loop); 
+  }
+  
+  const heroSection = document.getElementById('hero');
+  if (heroSection && window.IntersectionObserver) {
+    const obs = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        if (!isPlaying) { isPlaying = true; loop(); }
+      } else {
+        isPlaying = false;
+        cancelAnimationFrame(rafId);
+      }
+    }, { threshold: 0 });
+    obs.observe(heroSection);
+  } else {
+    isPlaying = true;
+    loop();
+  }
 })();
 
 /* ===== NAVBAR ===== */
@@ -316,7 +343,7 @@ function updateCartUI() {
   if (footer) footer.style.display = 'block';
   itemsEl.innerHTML = Store.cart.map(item => `
     <div class="cart-item">
-      <div class="ci-img">${item.img ? `<img src="${item.img}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : item.emoji}</div>
+      <div class="ci-img">${item.img ? `<img src="${item.img}" alt="${item.name.replace(/"/g, '&quot;')}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : item.emoji}</div>
       <div class="ci-info">
         <div class="ci-name">${item.name}</div>
         <div class="ci-size">Taille : ${item.size}</div>
