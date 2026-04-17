@@ -5,6 +5,8 @@
 
 'use strict';
 
+const WA_NUMBER = '221772520411';
+
 /* ===== JSONBIN CONFIG ===== */
 // 👉 Remplis ces 2 valeurs après avoir créé ton compte sur jsonbin.io
 const JSONBIN = {
@@ -333,7 +335,7 @@ function updateCartUI() {
     Store.cart.map(i => `• ${i.name} x${i.qty} (Taille ${i.size}) — ${fmt(i.price * i.qty)}`).join('\n') +
     `\n\n💰 Total : ${fmt(total)}\n\nMerci !`;
   const waBtn = document.getElementById('cartWaBtn');
-  if (waBtn) waBtn.href = `https://wa.me/221XXXXXXXXX?text=${encodeURIComponent(waText)}`;
+  if (waBtn) waBtn.href = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(waText)}`;
 }
 
 function toggleCart() { document.getElementById('cartOverlay')?.classList.toggle('open'); }
@@ -383,7 +385,7 @@ function orderCurrentViaWa() {
   if (!Store.currentProduct) return;
   const p = Store.currentProduct;
   const msg = `Bonjour Aïsha-T Shop ! 🌸\n\nJe souhaite commander :\n• ${p.name}\n• Taille : ${getSelectedSize()}\n• Prix : ${fmt(p.price)}\n\nMerci !`;
-  window.open(`https://wa.me/221XXXXXXXXX?text=${encodeURIComponent(msg)}`, '_blank');
+  window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 document.getElementById('productModal')?.addEventListener('click', e => {
@@ -401,7 +403,7 @@ function handleContact() {
   const sujet= document.getElementById('cSujet')?.value || '';
   const msg  = document.getElementById('cMsg')?.value || '';
   const waMsg = `Bonjour Aïsha-T Shop ! 🌸\n\nNom : ${name}\nTél : ${tel}\nSujet : ${sujet}\n\n${msg}`;
-  window.open(`https://wa.me/221XXXXXXXXX?text=${encodeURIComponent(waMsg)}`, '_blank');
+  window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(waMsg)}`, '_blank');
   showToast('✅ Message envoyé via WhatsApp !');
   fields.forEach(f => f.value = '');
 }
